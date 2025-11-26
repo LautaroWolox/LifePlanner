@@ -180,41 +180,31 @@ export default function LifePlanner() {
     return () => clearInterval(interval);
   }, [data.weekTasks, notificationsEnabled]);
 
-  // --- LOGICA DE DRAG & DROP MEJORADA PARA PERMITIR REORDENAMIENTO ---
   const handleDragEnd = (result) => {
     const { source, destination, draggableId } = result;
 
     if (!destination) return;
-    // Si se suelta en el mismo lugar exacto, no hacer nada
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
-    // Clonamos los estados actuales
     let newWeekTasks = [...data.weekTasks];
     let newFloatingTasks = [...data.floatingTasks];
     
-    // Identificamos de dónde viene la tarea
     let sourceList;
     if (source.droppableId.startsWith('floating-')) {
-        // Viene de lista flotante (Sidebar)
         const category = source.droppableId.replace('floating-', '');
         sourceList = newFloatingTasks.filter(t => t.category === category);
     } else {
-        // Viene de un día de la semana
         sourceList = newWeekTasks.filter(t => t.day === source.droppableId);
     }
     
-    // Encontramos la tarea arrastrada
-    const taskToMove = sourceList[source.index]; // Usamos el índice porque react-beautiful-dnd nos da el índice relativo a la lista visible
+    const taskToMove = sourceList[source.index];
     
-    if (!taskToMove) return; // Seguridad
+    if (!taskToMove) return;
 
     // 1. ELIMINAR DEL ORIGEN
     if (source.droppableId.startsWith('floating-')) {
-        // Para flotantes es fácil porque filtramos por ID
         newFloatingTasks = newFloatingTasks.filter(t => t.id !== taskToMove.id);
     } else {
-        // Para días es más complejo porque weekTasks tiene TODOS los días mezclados
-        // Tenemos que sacar la tarea de weekTasks
         newWeekTasks = newWeekTasks.filter(t => t.id !== taskToMove.id);
     }
 
@@ -223,42 +213,28 @@ export default function LifePlanner() {
 
     // 3. INSERTAR EN DESTINO
     if (destination.droppableId.startsWith('floating-')) {
-        // Destino: Lista Flotante
         const category = destination.droppableId.replace('floating-', '');
         updatedTask.category = category;
         delete updatedTask.day;
-        delete updatedTask.time; // Limpiamos hora al volver a flotante
+        delete updatedTask.time;
         updatedTask.type = 'custom';
         
-        // Insertamos en la posición correcta de la lista de esa categoría
-        // Primero obtenemos los de esa categoría
         const destinationCategoryTasks = newFloatingTasks.filter(t => t.category === category);
         const otherFloatingTasks = newFloatingTasks.filter(t => t.category !== category);
         
-        // Insertamos
         destinationCategoryTasks.splice(destination.index, 0, updatedTask);
-        
-        // Reconstruimos floatingTasks
         newFloatingTasks = [...otherFloatingTasks, ...destinationCategoryTasks];
 
     } else if (DAYS.includes(destination.droppableId)) {
-        // Destino: Día de la semana
         const destinationDay = destination.droppableId;
         updatedTask.day = destinationDay;
-        // Si venía de flotante, quizás no tenga hora o tipo, mantenemos lo que tenga
         updatedTask.type = updatedTask.type || 'custom';
-        delete updatedTask.category; // Ya no es flotante
+        delete updatedTask.category;
 
-        // Lógica de reordenamiento manual para días
-        // 1. Obtenemos las tareas de ese día
         const destinationDayTasks = newWeekTasks.filter(t => t.day === destinationDay);
-        // 2. Obtenemos las tareas de OTROS días
         const otherDayTasks = newWeekTasks.filter(t => t.day !== destinationDay);
         
-        // 3. Insertamos la tarea en la posición específica (índice visual)
         destinationDayTasks.splice(destination.index, 0, updatedTask);
-        
-        // 4. Reconstruimos weekTasks (El orden relativo de los otros días no importa, pero el de este día sí)
         newWeekTasks = [...otherDayTasks, ...destinationDayTasks];
     }
     
@@ -278,13 +254,13 @@ export default function LifePlanner() {
     }));
   }, []);
 
-  // --- FUNCIÓN ACTUALIZADA PARA ACEPTAR HORA ---
+  // --- FUNCIÓN QUE ACEPTA HORA (TimeVal) ---
   const addDayTask = useCallback((day, taskText, timeVal) => {
     const newTask = {
       id: `task-${Date.now()}`,
       day,
       task: taskText,
-      time: timeVal || null, // Guardamos la hora si existe
+      time: timeVal || null, 
       type: 'custom',
       completed: false,
     };
@@ -366,7 +342,6 @@ export default function LifePlanner() {
   };
   
   const todayName = getTodayName();
-  // Importante: No ordenamos aquí para respetar el orden manual del usuario
   const dayTasks = (day) => data.weekTasks.filter(t => t.day === day);
 
   if (isLoading) {
@@ -436,8 +411,9 @@ export default function LifePlanner() {
             </div>
           </header>
           
-          <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 md:p-6">
-            <div className="flex gap-4 h-full min-w-max md:min-w-0">
+          {/* AQUÍ ESTÁ EL CAMBIO PARA EL SCROLL HORIZONTAL EN MÓVIL */}
+          <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 md:p-6 bg-[#0f0f0f]">
+            <div className="flex h-full gap-4 px-2 pb-2">
               {DAYS.map(day => (
                 <DayColumn
                   key={day}
@@ -448,6 +424,7 @@ export default function LifePlanner() {
                   isToday={day === todayName}
                 />
               ))}
+              <div className="w-4 flex-shrink-0" />
             </div>
           </div>
         </main>
