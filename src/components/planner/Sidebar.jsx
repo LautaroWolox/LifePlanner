@@ -13,12 +13,13 @@ export default function Sidebar({
   notificationsEnabled,
   onToggleNotifications,
   onAddFloatingTask,
-  onDeleteFloatingTask, // NUEVO
-  onUpdateFloatingTask, // NUEVO
+  onDeleteFloatingTask,
+  onUpdateFloatingTask,
   onToggleGoal,
   onAddGoal,
+  onEditGoal,
+  onUpdateGoalStatus, // <--- NUEVO: Update Status
   onDeleteGoal,
-  onEditGoal, // NUEVO
   userEmail
 }) {
   const trabajoTasks = floatingTasks.filter(t => t.category === 'Trabajo Extra');
@@ -43,7 +44,14 @@ export default function Sidebar({
         <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
           <div className="space-y-2">
             <h3 className="text-white/50 text-xs font-semibold uppercase tracking-wider px-1">🎯 Objetivos</h3>
-            <GoalsPanel goals={personalGoals} onToggleGoal={onToggleGoal} onAddGoal={onAddGoal} onDeleteGoal={onDeleteGoal} onEditGoal={onEditGoal} />
+            <GoalsPanel 
+              goals={personalGoals} 
+              onToggleGoal={onToggleGoal} 
+              onAddGoal={onAddGoal} 
+              onEditGoal={onEditGoal}
+              onUpdateGoalStatus={onUpdateGoalStatus} // <--- PASAMOS LA NUEVA FUNCIÓN
+              onDeleteGoal={onDeleteGoal} 
+            />
           </div>
           
           <div className="space-y-3">
