@@ -3,7 +3,7 @@ import { Droppable } from '@hello-pangea/dnd';
 import TaskCard from './TaskCard';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import { Plus, Clock } from 'lucide-react';
+import { Plus, Clock, X } from 'lucide-react';
 
 const dayColors = {
   'Lunes': 'from-cyan-500/20 to-cyan-500/5',
@@ -23,16 +23,6 @@ const dayAccents = {
   'Viernes': 'bg-pink-500',
   'Sábado': 'bg-emerald-500',
   'Domingo': 'bg-amber-500',
-};
-
-const dayAccentText = {
-  'Lunes': 'text-cyan-400',
-  'Martes': 'text-blue-400',
-  'Miércoles': 'text-violet-400',
-  'Jueves': 'text-purple-400',
-  'Viernes': 'text-pink-400',
-  'Sábado': 'text-emerald-400',
-  'Domingo': 'text-amber-400',
 };
 
 export default function DayColumn({ day, tasks, onToggleComplete, onAddTask, isToday }) {
@@ -60,9 +50,6 @@ export default function DayColumn({ day, tasks, onToggleComplete, onAddTask, isT
 
   return (
     <div className={cn(
-      // CAMBIO CLAVE AQUÍ: w-[85vw] md:w-[320px]
-      // En celular ocupa el 85% de la pantalla (se ve un poquito del siguiente día para incitar al scroll)
-      // En PC ocupa 320px fijo.
       "flex-shrink-0 w-[85vw] md:w-[320px] flex flex-col h-full", 
       "bg-gradient-to-b rounded-2xl p-4 border border-white/5",
       dayColors[day],
@@ -112,45 +99,59 @@ export default function DayColumn({ day, tasks, onToggleComplete, onAddTask, isT
         )}
       </Droppable>
       
-      {/* Quick Add Task */}
+      {/* Quick Add Task MEJORADO */}
       <div className="mt-auto pt-3 border-t border-white/10">
         {isAdding ? (
-          <div className="flex flex-col gap-2 bg-black/20 p-2 rounded-lg animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex flex-col gap-2 bg-[#1a1a1a] p-3 rounded-xl border border-white/10 shadow-2xl animate-in fade-in slide-in-from-bottom-2">
+            
+            {/* Título y botón cerrar */}
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Nueva Tarea</span>
+              <button onClick={() => setIsAdding(false)} className="text-white/40 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Input Texto */}
             <Input
               autoFocus
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Nueva tarea..."
-              className="h-9 bg-[#0f0f0f] border-white/10 text-white text-sm placeholder:text-white/30 focus:border-white/30"
+              placeholder="Escribe aquí..."
+              className="h-10 bg-black/40 border-white/10 text-white text-base placeholder:text-white/20 focus:border-cyan-500/50 transition-all"
             />
+            
+            {/* Input Hora y Botón */}
             <div className="flex gap-2">
-              <div className="relative flex-1 group">
-                <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 group-hover:text-cyan-400 transition-colors" />
-                <Input
+              <div className="relative w-28 group">
+                <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-hover:text-cyan-400 transition-colors pointer-events-none" />
+                <input
                   type="time"
                   value={newTime}
                   onChange={(e) => setNewTime(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="h-9 pl-8 bg-[#0f0f0f] border-white/10 text-white text-xs font-mono focus:border-white/30"
+                  className="w-full h-10 pl-9 pr-2 bg-black/40 border border-white/10 rounded-md text-white text-sm font-mono focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
                 />
               </div>
+              
               <button
                 onClick={handleAdd}
                 className={cn(
-                  "px-4 rounded-md transition-all shadow-lg active:scale-95 flex items-center justify-center",
+                  "flex-1 h-10 rounded-md transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 font-medium text-white text-sm",
                   dayAccents[day],
-                  "text-white hover:brightness-110"
+                  "hover:brightness-110"
                 )}
               >
-                <Plus className="w-5 h-5" />
+                <span>Agregar</span>
+                <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
         ) : (
           <button
             onClick={() => setIsAdding(true)}
-            className="w-full py-2.5 rounded-lg border border-dashed border-white/10 text-white/40 text-xs hover:border-white/20 hover:text-white/80 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group"
+            className="w-full py-3 rounded-xl border border-dashed border-white/10 text-white/40 text-sm font-medium hover:border-white/20 hover:text-white/80 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group active:scale-[0.98]"
           >
             <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
             Agregar tarea
